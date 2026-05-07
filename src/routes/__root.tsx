@@ -13,6 +13,7 @@ import { PlayerProvider } from "@/context/PlayerContext";
 import { NowPlaying } from "@/components/NowPlaying";
 import { MagicalBackground } from "@/components/MagicalBackground";
 import { PixieCursor } from "@/components/PixieCursor";
+import { LyricsPanel } from "@/components/LyricsPanel";
 
 function NotFoundComponent() {
   return (
@@ -89,6 +90,7 @@ function RootComponent() {
         <MagicalBackground />
         <PixieCursor />
         <Outlet />
+        <LyricsPanel />
         <NowPlaying />
       </PlayerProvider>
     </QueryClientProvider>
