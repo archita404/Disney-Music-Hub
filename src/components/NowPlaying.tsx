@@ -1,9 +1,9 @@
-import { Play, Pause, SkipBack, SkipForward, Sparkles } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, Sparkles, Video, VideoOff } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { usePlayer } from "@/context/PlayerContext";
 
 export function NowPlaying() {
-  const { current, isPlaying, progress, toggle, next, prev } = usePlayer();
+  const { current, isPlaying, progress, toggle, next, prev, showVideo, setShowVideo } = usePlayer();
   if (!current) return null;
   return (
     <div className="fixed bottom-4 left-1/2 z-50 w-[min(960px,calc(100vw-2rem))] -translate-x-1/2 animate-in fade-in slide-in-from-bottom-4">
@@ -40,6 +40,14 @@ export function NowPlaying() {
                 </button>
                 <button onClick={next} aria-label="Next" className="rounded-full p-2 hover:bg-primary/10">
                   <SkipForward className="h-4 w-4 text-foreground" />
+                </button>
+                <button
+                  onClick={() => setShowVideo(!showVideo)}
+                  aria-label={showVideo ? "Hide video" : "Show video"}
+                  className="rounded-full p-2 hover:bg-primary/10"
+                  title={showVideo ? "Hide video" : "Show video"}
+                >
+                  {showVideo ? <VideoOff className="h-4 w-4 text-foreground" /> : <Video className="h-4 w-4 text-foreground" />}
                 </button>
               </div>
             </div>
