@@ -11,64 +11,105 @@ type Ctx = {
   toggle: () => void;
   next: () => void;
   prev: () => void;
+  showVideo: boolean;
+  setShowVideo: (v: boolean) => void;
 };
 
 const PlayerCtx = createContext<Ctx | null>(null);
 
+declare global {
+  interface Window {
+    YT?: any;
+    onYouTubeIframeAPIReady?: () => void;
+  }
+}
+
+let ytApiPromise: Promise<any> | null = null;
+function loadYTApi(): Promise<any> {
+  if (typeof window === "undefined") return Promise.reject();
+  if (window.YT && window.YT.Player) return Promise.resolve(window.YT);
+  if (ytApiPromise) return ytApiPromise;
+  ytApiPromise = new Promise((resolve) => {
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+    const prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+      prev?.();
+      resolve(window.YT);
+    };
+  });
+  return ytApiPromise;
+}
+
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const playerRef = useRef<any>(null);
+  const containerId = "yt-player-host";
   const [currentId, setCurrentId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [queue, setQueue] = useState<Song[]>(songs);
-
-  if (typeof window !== "undefined" && !audioRef.current) {
-    audioRef.current = new Audio();
-    audioRef.current.preload = "metadata";
-  }
+  const [showVideo, setShowVideo] = useState(false);
+  const [ready, setReady] = useState(false);
 
   const current = useMemo(
     () => songs.find((s) => s.id === currentId) ?? null,
     [currentId],
   );
 
+  // Init YT player once
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    loadYTApi().then((YT) => {
+      if (playerRef.current) return;
+      playerRef.current = new YT.Player(containerId, {
+        height: "100%",
+        width: "100%",
+        playerVars: { playsinline: 1, controls: 0, modestbranding: 1, rel: 0 },
+        events: {
+          onReady: () => setReady(true),
+          onStateChange: (e: any) => {
+            const s = e.data;
+            if (s === YT.PlayerState.PLAYING) setIsPlaying(true);
+            else if (s === YT.PlayerState.PAUSED) setIsPlaying(false);
+            else if (s === YT.PlayerState.ENDED) {
+              setIsPlaying(false);
+              nextRef.current?.();
+            }
+          },
+        },
+      });
+    });
+  }, []);
+
+  const nextRef = useRef<(() => void) | null>(null);
+
   const play = useCallback(
     (id: string, q?: Song[]) => {
-      const audio = audioRef.current;
-      if (!audio) return;
+      const yt = playerRef.current;
+      if (!yt || !ready) return;
       if (q && q.length) setQueue(q);
       if (id === currentId) {
-        if (audio.paused) {
-          audio.play().catch(() => {});
-          setIsPlaying(true);
-        } else {
-          audio.pause();
-          setIsPlaying(false);
-        }
+        const state = yt.getPlayerState?.();
+        if (state === 1) yt.pauseVideo();
+        else yt.playVideo();
         return;
       }
       const song = songs.find((s) => s.id === id);
-      if (!song) return;
-      audio.src = song.previewUrl;
-      audio.currentTime = 0;
-      audio.play().catch(() => {});
+      if (!song || !song.youtubeId) return;
+      yt.loadVideoById(song.youtubeId);
       setCurrentId(id);
-      setIsPlaying(true);
     },
-    [currentId],
+    [currentId, ready],
   );
 
   const toggle = useCallback(() => {
-    const audio = audioRef.current;
-    if (!audio || !currentId) return;
-    if (audio.paused) {
-      audio.play().catch(() => {});
-      setIsPlaying(true);
-    } else {
-      audio.pause();
-      setIsPlaying(false);
-    }
+    const yt = playerRef.current;
+    if (!yt || !currentId) return;
+    const state = yt.getPlayerState?.();
+    if (state === 1) yt.pauseVideo();
+    else yt.playVideo();
   }, [currentId]);
 
   const next = useCallback(() => {
@@ -87,28 +128,40 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     if (p) play(p.id);
   }, [current, queue, play]);
 
+  useEffect(() => { nextRef.current = next; }, [next]);
+
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    const onTime = () => {
-      if (audio.duration > 0) setProgress(audio.currentTime / audio.duration);
-      setElapsed(audio.currentTime);
-    };
-    const onEnd = () => next();
-    audio.addEventListener("timeupdate", onTime);
-    audio.addEventListener("ended", onEnd);
-    return () => {
-      audio.removeEventListener("timeupdate", onTime);
-      audio.removeEventListener("ended", onEnd);
-    };
-  }, [next]);
+    const t = setInterval(() => {
+      const yt = playerRef.current;
+      if (!yt || !yt.getCurrentTime) return;
+      const cur = yt.getCurrentTime() || 0;
+      const dur = yt.getDuration?.() || 0;
+      setElapsed(cur);
+      if (dur > 0) setProgress(cur / dur);
+    }, 250);
+    return () => clearInterval(t);
+  }, []);
 
   const value = useMemo<Ctx>(
-    () => ({ current, isPlaying, progress, elapsed, queue, play, toggle, next, prev }),
-    [current, isPlaying, progress, elapsed, queue, play, toggle, next, prev],
+    () => ({ current, isPlaying, progress, elapsed, queue, play, toggle, next, prev, showVideo, setShowVideo }),
+    [current, isPlaying, progress, elapsed, queue, play, toggle, next, prev, showVideo],
   );
 
-  return <PlayerCtx.Provider value={value}>{children}</PlayerCtx.Provider>;
+  return (
+    <PlayerCtx.Provider value={value}>
+      {children}
+      {/* Hidden YouTube player host. Rendered visually via portal-like positioning when showVideo=true */}
+      <div
+        className={`fixed z-40 overflow-hidden rounded-2xl shadow-2xl transition-all ${
+          showVideo && current
+            ? "bottom-28 right-4 h-44 w-72 sm:h-56 sm:w-96 ring-2 ring-primary/50"
+            : "h-1 w-1 -left-[9999px] top-0 opacity-0 pointer-events-none"
+        }`}
+      >
+        <div id={containerId} className="h-full w-full" />
+      </div>
+    </PlayerCtx.Provider>
+  );
 }
 
 export function usePlayer() {
