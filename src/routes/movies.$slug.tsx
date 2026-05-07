@@ -1,12 +1,12 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Play, Pause, Heart, ArrowLeft, Sparkles } from "lucide-react";
 import { Header } from "@/components/Header";
-import { movies, songs } from "@/data/songs";
+import { movies, songs, type Song } from "@/data/songs";
 import { usePlayer } from "@/context/PlayerContext";
 import { useFavorites } from "@/hooks/useFavorites";
 
 export const Route = createFileRoute("/movies/$slug")({
-  loader: ({ params }): { movie: typeof movies[number]; tracks: typeof songs } => {
+  loader: ({ params }): { movie: typeof movies[number]; tracks: Song[] } => {
     const movie = movies.find((m) => m.slug === params.slug);
     if (!movie) throw notFound();
     const tracks = songs.filter((s) => s.movieSlug === params.slug);
