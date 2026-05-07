@@ -68,7 +68,7 @@ function MoviePage() {
         </div>
 
         <ul className="mt-10 divide-y divide-border/40 overflow-hidden rounded-2xl glass-card">
-          {tracks.map((s, i) => {
+          {tracks.map((s: Song, i: number) => {
             const playing = isPlaying && current?.id === s.id;
             const fav = favorites.has(s.id);
             return (
