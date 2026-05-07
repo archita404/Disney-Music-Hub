@@ -5,6 +5,7 @@ type Ctx = {
   current: Song | null;
   isPlaying: boolean;
   progress: number; // 0-1
+  elapsed: number; // seconds
   queue: Song[];
   play: (id: string, queue?: Song[]) => void;
   toggle: () => void;
@@ -19,6 +20,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [currentId, setCurrentId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
   const [queue, setQueue] = useState<Song[]>(songs);
 
   if (typeof window !== "undefined" && !audioRef.current) {
@@ -90,6 +92,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     if (!audio) return;
     const onTime = () => {
       if (audio.duration > 0) setProgress(audio.currentTime / audio.duration);
+      setElapsed(audio.currentTime);
     };
     const onEnd = () => next();
     audio.addEventListener("timeupdate", onTime);
@@ -101,8 +104,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, [next]);
 
   const value = useMemo<Ctx>(
-    () => ({ current, isPlaying, progress, queue, play, toggle, next, prev }),
-    [current, isPlaying, progress, queue, play, toggle, next, prev],
+    () => ({ current, isPlaying, progress, elapsed, queue, play, toggle, next, prev }),
+    [current, isPlaying, progress, elapsed, queue, play, toggle, next, prev],
   );
 
   return <PlayerCtx.Provider value={value}>{children}</PlayerCtx.Provider>;

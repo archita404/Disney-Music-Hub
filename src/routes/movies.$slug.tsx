@@ -6,7 +6,7 @@ import { usePlayer } from "@/context/PlayerContext";
 import { useFavorites } from "@/hooks/useFavorites";
 
 export const Route = createFileRoute("/movies/$slug")({
-  loader: ({ params }) => {
+  loader: ({ params }): { movie: typeof movies[number]; tracks: typeof songs } => {
     const movie = movies.find((m) => m.slug === params.slug);
     if (!movie) throw notFound();
     const tracks = songs.filter((s) => s.movieSlug === params.slug);
