@@ -97,8 +97,15 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       const song = songs.find((s) => s.id === id);
-      if (!song || !song.youtubeId) return;
-      yt.loadVideoById(song.youtubeId);
+      if (!song) return;
+      // Use YouTube search playlist so we always land on a working official upload,
+      // even if a hard-coded video ID is region-locked or removed.
+      const query = `${song.title} ${song.movie} official`;
+      if (yt.loadPlaylist) {
+        yt.loadPlaylist({ list: query, listType: "search", index: 0, suggestedQuality: "default" });
+      } else if (song.youtubeId) {
+        yt.loadVideoById(song.youtubeId);
+      }
       setCurrentId(id);
     },
     [currentId, ready],
