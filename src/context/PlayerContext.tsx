@@ -13,6 +13,7 @@ type Ctx = {
   prev: () => void;
   showVideo: boolean;
   setShowVideo: (v: boolean) => void;
+  unavailableId: string | null;
 };
 
 const PlayerCtx = createContext<Ctx | null>(null);
@@ -52,6 +53,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [queue, setQueue] = useState<Song[]>(songs);
   const [showVideo, setShowVideo] = useState(false);
   const [ready, setReady] = useState(false);
+  const [unavailableId, setUnavailableId] = useState<string | null>(null);
 
   const current = useMemo(
     () => songs.find((s) => s.id === currentId) ?? null,
@@ -66,7 +68,13 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       playerRef.current = new YT.Player(containerId, {
         height: "100%",
         width: "100%",
-        playerVars: { playsinline: 1, controls: 0, modestbranding: 1, rel: 0 },
+        playerVars: {
+          playsinline: 1,
+          controls: 0,
+          modestbranding: 1,
+          rel: 0,
+          origin: window.location.origin,
+        },
         events: {
           onReady: () => setReady(true),
           onStateChange: (e: any) => {
@@ -77,6 +85,11 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
               setIsPlaying(false);
               nextRef.current?.();
             }
+          },
+          onError: (e: any) => {
+            // 2 invalid id, 5 html5 player error, 100 not found, 101/150 embed disabled
+            console.warn("[YT] playback error", e?.data);
+            setUnavailableId((prev) => prev ?? "current");
           },
         },
       });
@@ -97,15 +110,9 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       const song = songs.find((s) => s.id === id);
-      if (!song) return;
-      // Use YouTube search playlist so we always land on a working official upload,
-      // even if a hard-coded video ID is region-locked or removed.
-      const query = `${song.title} ${song.movie} official`;
-      if (yt.loadPlaylist) {
-        yt.loadPlaylist({ list: query, listType: "search", index: 0, suggestedQuality: "default" });
-      } else if (song.youtubeId) {
-        yt.loadVideoById(song.youtubeId);
-      }
+      if (!song || !song.youtubeId) return;
+      setUnavailableId(null);
+      yt.loadVideoById(song.youtubeId);
       setCurrentId(id);
     },
     [currentId, ready],
@@ -150,8 +157,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo<Ctx>(
-    () => ({ current, isPlaying, progress, elapsed, queue, play, toggle, next, prev, showVideo, setShowVideo }),
-    [current, isPlaying, progress, elapsed, queue, play, toggle, next, prev, showVideo],
+    () => ({ current, isPlaying, progress, elapsed, queue, play, toggle, next, prev, showVideo, setShowVideo, unavailableId: unavailableId === "current" ? currentId : null }),
+    [current, isPlaying, progress, elapsed, queue, play, toggle, next, prev, showVideo, unavailableId, currentId],
   );
 
   return (
