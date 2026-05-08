@@ -31,62 +31,62 @@ const preview = (i: number) => PREVIEWS[i % PREVIEWS.length];
 type Raw = Omit<Song, "id" | "previewUrl" | "movieSlug"> & { movie: string };
 const raw: Raw[] = [
   // Little Mermaid
-  { title: "Part of Your World", movie: "The Little Mermaid", character: "Ariel", year: 1989, duration: "3:14", cover: ocean, accent: "200", category: "Princess", youtubeId: "OEvVnFoTpJU" },
+  { title: "Part of Your World", movie: "The Little Mermaid", character: "Ariel", year: 1989, duration: "3:14", cover: ocean, accent: "200", category: "Princess", youtubeId: "Aw_2Dw6e-2Y" },
   { title: "Under the Sea", movie: "The Little Mermaid", character: "Sebastian", year: 1989, duration: "3:14", cover: ocean, accent: "180", category: "Friendship", youtubeId: "GC_mV1IpjWA" },
-  { title: "Poor Unfortunate Souls", movie: "The Little Mermaid", character: "Ursula", year: 1989, duration: "4:42", cover: ocean, accent: "300", category: "Villain", youtubeId: "MLzDc6XKSbA" },
-  { title: "Kiss the Girl", movie: "The Little Mermaid", character: "Sebastian", year: 1989, duration: "2:45", cover: ocean, accent: "160", category: "Love", youtubeId: "PYxhPgRZxIw" },
+  { title: "Poor Unfortunate Souls", movie: "The Little Mermaid", character: "Ursula", year: 1989, duration: "4:42", cover: ocean, accent: "300", category: "Villain", youtubeId: "Hn1eFwsv4Vk" },
+  { title: "Kiss the Girl", movie: "The Little Mermaid", character: "Sebastian", year: 1989, duration: "2:45", cover: ocean, accent: "160", category: "Love", youtubeId: "9DRRMqr5Mtg" },
   // Frozen
-  { title: "Let It Go", movie: "Frozen", character: "Elsa", year: 2013, duration: "3:44", cover: ice, accent: "240", category: "Princess", youtubeId: "L0MK7qz13bU" },
-  { title: "Do You Want to Build a Snowman?", movie: "Frozen", character: "Anna", year: 2013, duration: "3:24", cover: ice, accent: "220", category: "Friendship", youtubeId: "ABPNJyP7u8Q" },
-  { title: "For the First Time in Forever", movie: "Frozen", character: "Anna & Elsa", year: 2013, duration: "3:46", cover: ice, accent: "210", category: "Princess", youtubeId: "HiFCWG0HePc" },
-  { title: "Love Is an Open Door", movie: "Frozen", character: "Anna & Hans", year: 2013, duration: "2:07", cover: ice, accent: "260", category: "Love", youtubeId: "SLO5HJpMOLM" },
-  { title: "Into the Unknown", movie: "Frozen II", character: "Elsa", year: 2019, duration: "3:14", cover: ice, accent: "230", category: "Anthem", youtubeId: "AC9b5Ku5gpc" },
-  { title: "Show Yourself", movie: "Frozen II", character: "Elsa", year: 2019, duration: "4:21", cover: ice, accent: "245", category: "Anthem", youtubeId: "Sz2ZHj_R-CE" },
+  { title: "Let It Go", movie: "Frozen", character: "Elsa", year: 2013, duration: "3:44", cover: ice, accent: "240", category: "Princess", youtubeId: "moSFlvxnbgk" },
+  { title: "Do You Want to Build a Snowman?", movie: "Frozen", character: "Anna", year: 2013, duration: "3:24", cover: ice, accent: "220", category: "Friendship", youtubeId: "ZA8ZB6pmoiw" },
+  { title: "For the First Time in Forever", movie: "Frozen", character: "Anna & Elsa", year: 2013, duration: "3:46", cover: ice, accent: "210", category: "Princess", youtubeId: "OQOjwOACfvo" },
+  { title: "Love Is an Open Door", movie: "Frozen", character: "Anna & Hans", year: 2013, duration: "2:07", cover: ice, accent: "260", category: "Love", youtubeId: "v4UhRpRlmcw" },
+  { title: "Into the Unknown", movie: "Frozen II", character: "Elsa", year: 2019, duration: "3:14", cover: ice, accent: "230", category: "Anthem", youtubeId: "Zi4LFprT_jY" },
+  { title: "Show Yourself", movie: "Frozen II", character: "Elsa", year: 2019, duration: "4:21", cover: ice, accent: "245", category: "Anthem", youtubeId: "AC9b5Ku5gpc" },
   // Lion King
   { title: "Circle of Life", movie: "The Lion King", character: "Rafiki", year: 1994, duration: "3:59", cover: savanna, accent: "60", category: "Adventure", youtubeId: "GibiNy4d4gc" },
-  { title: "Hakuna Matata", movie: "The Lion King", character: "Timon & Pumbaa", year: 1994, duration: "3:33", cover: savanna, accent: "80", category: "Friendship", youtubeId: "xnxRpagkW2U" },
+  { title: "Hakuna Matata", movie: "The Lion King", character: "Timon & Pumbaa", year: 1994, duration: "3:33", cover: savanna, accent: "80", category: "Friendship", youtubeId: "xB5ceul3JqU" },
   { title: "I Just Can't Wait to Be King", movie: "The Lion King", character: "Simba", year: 1994, duration: "2:50", cover: savanna, accent: "70", category: "Adventure", youtubeId: "nbY_aP-alkw" },
-  { title: "Be Prepared", movie: "The Lion King", character: "Scar", year: 1994, duration: "3:40", cover: savanna, accent: "140", category: "Villain", youtubeId: "2zoKqq_ZRCM" },
+  { title: "Be Prepared", movie: "The Lion King", character: "Scar", year: 1994, duration: "3:40", cover: savanna, accent: "140", category: "Villain", youtubeId: "y5Sdd5Ouj1I" },
   { title: "Can You Feel the Love Tonight", movie: "The Lion King", character: "Simba & Nala", year: 1994, duration: "4:02", cover: savanna, accent: "30", category: "Love", youtubeId: "25QyCxVkXwQ" },
   // Aladdin
-  { title: "A Whole New World", movie: "Aladdin", character: "Aladdin & Jasmine", year: 1992, duration: "2:40", cover: arabian, accent: "300", category: "Love", youtubeId: "hZ1Rb9hC4jY" },
+  { title: "A Whole New World", movie: "Aladdin", character: "Aladdin & Jasmine", year: 1992, duration: "2:40", cover: arabian, accent: "300", category: "Love", youtubeId: "0qJUKZ4FIBs" },
   { title: "Friend Like Me", movie: "Aladdin", character: "Genie", year: 1992, duration: "2:25", cover: arabian, accent: "270", category: "Friendship", youtubeId: "diYAc7gB-0A" },
   { title: "Prince Ali", movie: "Aladdin", character: "Genie", year: 1992, duration: "2:50", cover: arabian, accent: "280", category: "Adventure", youtubeId: "n3qOiBaM_qA" },
-  { title: "Speechless", movie: "Aladdin (2019)", character: "Jasmine", year: 2019, duration: "4:00", cover: arabian, accent: "310", category: "Anthem", youtubeId: "Tn2fELG3B6U" },
+  { title: "Speechless", movie: "Aladdin (2019)", character: "Jasmine", year: 2019, duration: "4:00", cover: arabian, accent: "310", category: "Anthem", youtubeId: "1bqHN2YSAN8" },
   // Tangled
-  { title: "I See the Light", movie: "Tangled", character: "Rapunzel & Flynn", year: 2010, duration: "3:43", cover: forest, accent: "30", category: "Love", youtubeId: "0jXTBAGv9ZQ" },
+  { title: "I See the Light", movie: "Tangled", character: "Rapunzel & Flynn", year: 2010, duration: "3:43", cover: forest, accent: "30", category: "Love", youtubeId: "ZOK_xfIxLBM" },
   { title: "When Will My Life Begin", movie: "Tangled", character: "Rapunzel", year: 2010, duration: "2:34", cover: forest, accent: "40", category: "Princess", youtubeId: "ESJSx9oGqZc" },
   { title: "I've Got a Dream", movie: "Tangled", character: "Pub Thugs", year: 2010, duration: "3:13", cover: forest, accent: "50", category: "Friendship", youtubeId: "0EFmukXZ2c4" },
   // Toy Story
   { title: "You've Got a Friend in Me", movie: "Toy Story", character: "Woody", year: 1995, duration: "2:04", cover: toys, accent: "50", category: "Friendship", youtubeId: "nMN4JXIhJVk" },
   // Beauty and the Beast
-  { title: "Be Our Guest", movie: "Beauty and the Beast", character: "Lumière", year: 1991, duration: "3:44", cover: forest, accent: "40", category: "Friendship", youtubeId: "8Cv_Q0gcuSE" },
-  { title: "Beauty and the Beast", movie: "Beauty and the Beast", character: "Mrs. Potts", year: 1991, duration: "2:46", cover: forest, accent: "320", category: "Love", youtubeId: "uZcuijp7vSI" },
-  { title: "Belle", movie: "Beauty and the Beast", character: "Belle", year: 1991, duration: "5:08", cover: forest, accent: "330", category: "Princess", youtubeId: "9Y8vL_kfm9o" },
+  { title: "Be Our Guest", movie: "Beauty and the Beast", character: "Lumière", year: 1991, duration: "3:44", cover: forest, accent: "40", category: "Friendship", youtubeId: "ianBdt4Kcyk" },
+  { title: "Beauty and the Beast", movie: "Beauty and the Beast", character: "Mrs. Potts", year: 1991, duration: "2:46", cover: forest, accent: "320", category: "Love", youtubeId: "VcZe8_RZO8c" },
+  { title: "Belle", movie: "Beauty and the Beast", character: "Belle", year: 1991, duration: "5:08", cover: forest, accent: "330", category: "Princess", youtubeId: "ihJYZIY1qTI" },
   { title: "Gaston", movie: "Beauty and the Beast", character: "LeFou & Gaston", year: 1991, duration: "3:39", cover: forest, accent: "20", category: "Villain", youtubeId: "rgYmkguJSrA" },
   // Mulan
   { title: "Reflection", movie: "Mulan", character: "Mulan", year: 1998, duration: "2:30", cover: forest, accent: "150", category: "Princess", youtubeId: "lcvQKa_dN3M" },
-  { title: "I'll Make a Man Out of You", movie: "Mulan", character: "Shang", year: 1998, duration: "3:22", cover: savanna, accent: "20", category: "Adventure", youtubeId: "lAvi_rcJrHg" },
-  { title: "A Girl Worth Fighting For", movie: "Mulan", character: "Soldiers", year: 1998, duration: "2:31", cover: savanna, accent: "100", category: "Friendship", youtubeId: "qbu2KOhhO4U" },
+  { title: "I'll Make a Man Out of You", movie: "Mulan", character: "Shang", year: 1998, duration: "3:22", cover: savanna, accent: "20", category: "Adventure", youtubeId: "v-_BVwRHwTs" },
+  { title: "A Girl Worth Fighting For", movie: "Mulan", character: "Soldiers", year: 1998, duration: "2:31", cover: savanna, accent: "100", category: "Friendship", youtubeId: "C2r8Rd7s0CY" },
   // Moana
   { title: "How Far I'll Go", movie: "Moana", character: "Moana", year: 2016, duration: "2:43", cover: ocean, accent: "190", category: "Adventure", youtubeId: "cPAbx5kgCJo" },
   { title: "You're Welcome", movie: "Moana", character: "Maui", year: 2016, duration: "2:39", cover: ocean, accent: "100", category: "Friendship", youtubeId: "79DijItQXMM" },
   { title: "We Know the Way", movie: "Moana", character: "Lin-Manuel Miranda", year: 2016, duration: "1:32", cover: ocean, accent: "170", category: "Adventure", youtubeId: "PvL34cUbZiY" },
-  { title: "Shiny", movie: "Moana", character: "Tamatoa", year: 2016, duration: "3:13", cover: ocean, accent: "120", category: "Villain", youtubeId: "ddbFc1RB3Sg" },
+  { title: "Shiny", movie: "Moana", character: "Tamatoa", year: 2016, duration: "3:13", cover: ocean, accent: "120", category: "Villain", youtubeId: "_ujnuvKK29s" },
   // Encanto
   { title: "We Don't Talk About Bruno", movie: "Encanto", character: "Madrigals", year: 2021, duration: "3:36", cover: forest, accent: "290", category: "Friendship", youtubeId: "bvWRMAU6V-c" },
   { title: "Surface Pressure", movie: "Encanto", character: "Luisa", year: 2021, duration: "3:21", cover: forest, accent: "10", category: "Anthem", youtubeId: "tQwVKr8rCYw" },
-  { title: "What Else Can I Do?", movie: "Encanto", character: "Isabela", year: 2021, duration: "2:53", cover: forest, accent: "120", category: "Anthem", youtubeId: "AC1FB1L1ftw" },
+  { title: "What Else Can I Do?", movie: "Encanto", character: "Isabela", year: 2021, duration: "2:53", cover: forest, accent: "120", category: "Anthem", youtubeId: "79DijItQXMM" },
   // 101 Dalmatians
-  { title: "Cruella De Vil", movie: "101 Dalmatians", character: "Cruella", year: 1961, duration: "1:30", cover: toys, accent: "0", category: "Villain", youtubeId: "1m9eCh8RT2c" },
+  { title: "Cruella De Vil", movie: "101 Dalmatians", character: "Cruella", year: 1961, duration: "1:30", cover: toys, accent: "0", category: "Villain", youtubeId: "qf2onUbqAnY" },
   // Pinocchio
-  { title: "When You Wish Upon a Star", movie: "Pinocchio", character: "Jiminy Cricket", year: 1940, duration: "3:18", cover: toys, accent: "250", category: "Love", youtubeId: "lyv7rhq5_pk" },
+  { title: "When You Wish Upon a Star", movie: "Pinocchio", character: "Jiminy Cricket", year: 1940, duration: "3:18", cover: toys, accent: "250", category: "Love", youtubeId: "C0Ftzdkh1Sg" },
   { title: "I've Got No Strings", movie: "Pinocchio", character: "Pinocchio", year: 1940, duration: "2:35", cover: toys, accent: "60", category: "Friendship", youtubeId: "BWn12i4qmRE" },
   // Cinderella
   { title: "A Dream Is a Wish Your Heart Makes", movie: "Cinderella", character: "Cinderella", year: 1950, duration: "3:01", cover: forest, accent: "330", category: "Princess", youtubeId: "TLatcM0F0Yk" },
-  { title: "Bibbidi-Bobbidi-Boo", movie: "Cinderella", character: "Fairy Godmother", year: 1950, duration: "1:51", cover: forest, accent: "340", category: "Princess", youtubeId: "G_QhTdzWBJk" },
+  { title: "Bibbidi-Bobbidi-Boo", movie: "Cinderella", character: "Fairy Godmother", year: 1950, duration: "1:51", cover: forest, accent: "340", category: "Princess", youtubeId: "GLPmTbpu3lw" },
   // Pocahontas
-  { title: "Colors of the Wind", movie: "Pocahontas", character: "Pocahontas", year: 1995, duration: "3:31", cover: forest, accent: "130", category: "Adventure", youtubeId: "uxpDa-c-4Mc" },
+  { title: "Colors of the Wind", movie: "Pocahontas", character: "Pocahontas", year: 1995, duration: "3:31", cover: forest, accent: "130", category: "Adventure", youtubeId: "EOcZyTqcq8s" },
   { title: "Just Around the Riverbend", movie: "Pocahontas", character: "Pocahontas", year: 1995, duration: "2:25", cover: forest, accent: "140", category: "Adventure", youtubeId: "v8aTzRg7P6A" },
   // Coco
   { title: "Remember Me", movie: "Coco", character: "Miguel", year: 2017, duration: "2:35", cover: arabian, accent: "10", category: "Love", youtubeId: "sH5Smcfi6Z4" },
@@ -103,7 +103,7 @@ const raw: Raw[] = [
   { title: "Once Upon a Dream", movie: "Sleeping Beauty", character: "Aurora", year: 1959, duration: "2:48", cover: forest, accent: "320", category: "Love", youtubeId: "ZUE6dHy0LF0" },
   // Snow White
   { title: "Heigh-Ho", movie: "Snow White and the Seven Dwarfs", character: "Seven Dwarfs", year: 1937, duration: "2:43", cover: forest, accent: "60", category: "Friendship", youtubeId: "X2LTL8KgKv8" },
-  { title: "Whistle While You Work", movie: "Snow White and the Seven Dwarfs", character: "Snow White", year: 1937, duration: "2:34", cover: forest, accent: "100", category: "Princess", youtubeId: "X1dPWtUiPenc" },
+  { title: "Whistle While You Work", movie: "Snow White and the Seven Dwarfs", character: "Snow White", year: 1937, duration: "2:34", cover: forest, accent: "100", category: "Princess", youtubeId: "5kcCw3Xtk8I" },
   // Mary Poppins
   { title: "Supercalifragilisticexpialidocious", movie: "Mary Poppins", character: "Mary Poppins", year: 1964, duration: "2:00", cover: toys, accent: "180", category: "Friendship", youtubeId: "tRFHXMQP-QU" },
   { title: "A Spoonful of Sugar", movie: "Mary Poppins", character: "Mary Poppins", year: 1964, duration: "4:10", cover: toys, accent: "150", category: "Friendship", youtubeId: "84r0RmsYz3Q" },
