@@ -1,10 +1,12 @@
-import { Play, Pause, SkipBack, SkipForward, Sparkles, Video, VideoOff } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, Sparkles, Video, VideoOff, ExternalLink } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { usePlayer } from "@/context/PlayerContext";
 
 export function NowPlaying() {
-  const { current, isPlaying, progress, toggle, next, prev, showVideo, setShowVideo } = usePlayer();
+  const { current, isPlaying, progress, toggle, next, prev, showVideo, setShowVideo, unavailableId } = usePlayer();
   if (!current) return null;
+  const isUnavailable = unavailableId === current.id;
+  const ytSearch = `https://www.youtube.com/results?search_query=${encodeURIComponent(`${current.title} ${current.movie} official`)}`;
   return (
     <div className="fixed bottom-4 left-1/2 z-50 w-[min(960px,calc(100vw-2rem))] -translate-x-1/2 animate-in fade-in slide-in-from-bottom-4">
       <div className="glass-card magic-border relative overflow-hidden rounded-2xl px-3 py-3 shadow-[var(--shadow-magic)] sm:px-4">
@@ -61,6 +63,16 @@ export function NowPlaying() {
                 }}
               />
             </div>
+            {isUnavailable && (
+              <a
+                href={ytSearch}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-1 inline-flex items-center gap-1 text-[11px] text-primary hover:underline"
+              >
+                <ExternalLink className="h-3 w-3" /> Video unavailable here — open on YouTube
+              </a>
+            )}
           </div>
         </div>
       </div>
