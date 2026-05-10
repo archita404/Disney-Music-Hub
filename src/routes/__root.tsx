@@ -98,6 +98,9 @@ function RootComponent() {
         <MagicalBackground />
         <PixieCursor />
         <Outlet />
+        <footer className="relative z-10 py-8 text-center text-sm text-muted-foreground">
+          Made by <span className="font-display text-shimmer">Archita Singha</span>
+        </footer>
         <LyricsPanel />
         <NowPlaying />
       </PlayerProvider>
