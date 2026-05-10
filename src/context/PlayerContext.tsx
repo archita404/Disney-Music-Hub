@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { songs, type Song } from "@/data/songs";
 
 type Ctx = {
@@ -56,10 +64,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [unavailableId, setUnavailableId] = useState<string | null>(null);
   const fallbackAttemptedRef = useRef<Set<string>>(new Set());
 
-  const current = useMemo(
-    () => songs.find((s) => s.id === currentId) ?? null,
-    [currentId],
-  );
+  const current = useMemo(() => songs.find((s) => s.id === currentId) ?? null, [currentId]);
 
   // Init YT player once
   useEffect(() => {
@@ -94,7 +99,13 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
             const yt = playerRef.current;
             const songId = currentIdRef.current;
             const song = songs.find((s) => s.id === songId);
-            if (yt && songId && song && yt.loadPlaylist && !fallbackAttemptedRef.current.has(songId)) {
+            if (
+              yt &&
+              songId &&
+              song &&
+              yt.loadPlaylist &&
+              !fallbackAttemptedRef.current.has(songId)
+            ) {
               try {
                 fallbackAttemptedRef.current.add(songId);
                 yt.loadPlaylist({
@@ -117,7 +128,9 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   const nextRef = useRef<(() => void) | null>(null);
   const currentIdRef = useRef<string | null>(null);
-  useEffect(() => { currentIdRef.current = currentId; }, [currentId]);
+  useEffect(() => {
+    currentIdRef.current = currentId;
+  }, [currentId]);
 
   const play = useCallback(
     (id: string, q?: Song[]) => {
@@ -164,7 +177,9 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     if (p) play(p.id);
   }, [current, queue, play]);
 
-  useEffect(() => { nextRef.current = next; }, [next]);
+  useEffect(() => {
+    nextRef.current = next;
+  }, [next]);
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -179,8 +194,34 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo<Ctx>(
-    () => ({ current, isPlaying, progress, elapsed, queue, play, toggle, next, prev, showVideo, setShowVideo, unavailableId: unavailableId === "current" ? currentId : null }),
-    [current, isPlaying, progress, elapsed, queue, play, toggle, next, prev, showVideo, unavailableId, currentId],
+    () => ({
+      current,
+      isPlaying,
+      progress,
+      elapsed,
+      queue,
+      play,
+      toggle,
+      next,
+      prev,
+      showVideo,
+      setShowVideo,
+      unavailableId: unavailableId === "current" ? currentId : null,
+    }),
+    [
+      current,
+      isPlaying,
+      progress,
+      elapsed,
+      queue,
+      play,
+      toggle,
+      next,
+      prev,
+      showVideo,
+      unavailableId,
+      currentId,
+    ],
   );
 
   return (
