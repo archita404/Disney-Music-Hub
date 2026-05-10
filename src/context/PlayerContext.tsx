@@ -89,6 +89,21 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
           onError: (e: any) => {
             // 2 invalid id, 5 html5 player error, 100 not found, 101/150 embed disabled
             console.warn("[YT] playback error", e?.data);
+            // Auto-fallback: search YouTube for an official upload of the current song
+            const yt = playerRef.current;
+            const song = songs.find((s) => s.id === currentIdRef.current);
+            if (yt && song && yt.loadPlaylist) {
+              try {
+                yt.loadPlaylist({
+                  list: `${song.title} ${song.movie} official`,
+                  listType: "search",
+                  index: 0,
+                });
+                return;
+              } catch (err) {
+                console.warn("[YT] search fallback failed", err);
+              }
+            }
             setUnavailableId((prev) => prev ?? "current");
           },
         },
@@ -97,6 +112,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const nextRef = useRef<(() => void) | null>(null);
+  const currentIdRef = useRef<string | null>(null);
+  useEffect(() => { currentIdRef.current = currentId; }, [currentId]);
 
   const play = useCallback(
     (id: string, q?: Song[]) => {
