@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { songs, type Song } from "@/data/songs";
 
 type Ctx = {
@@ -54,11 +62,9 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [showVideo, setShowVideo] = useState(false);
   const [ready, setReady] = useState(false);
   const [unavailableId, setUnavailableId] = useState<string | null>(null);
+  const fallbackAttemptedRef = useRef<Set<string>>(new Set());
 
-  const current = useMemo(
-    () => songs.find((s) => s.id === currentId) ?? null,
-    [currentId],
-  );
+  const current = useMemo(() => songs.find((s) => s.id === currentId) ?? null, [currentId]);
 
   // Init YT player once
   useEffect(() => {
@@ -91,9 +97,17 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
             console.warn("[YT] playback error", e?.data);
             // Auto-fallback: search YouTube for an official upload of the current song
             const yt = playerRef.current;
-            const song = songs.find((s) => s.id === currentIdRef.current);
-            if (yt && song && yt.loadPlaylist) {
+            const songId = currentIdRef.current;
+            const song = songs.find((s) => s.id === songId);
+            if (
+              yt &&
+              songId &&
+              song &&
+              yt.loadPlaylist &&
+              !fallbackAttemptedRef.current.has(songId)
+            ) {
               try {
+                fallbackAttemptedRef.current.add(songId);
                 yt.loadPlaylist({
                   list: `${song.title} ${song.movie} official`,
                   listType: "search",
@@ -104,7 +118,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
                 console.warn("[YT] search fallback failed", err);
               }
             }
-            setUnavailableId((prev) => prev ?? "current");
+            setIsPlaying(false);
+            setUnavailableId(songId ?? "current");
           },
         },
       });
@@ -113,7 +128,9 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   const nextRef = useRef<(() => void) | null>(null);
   const currentIdRef = useRef<string | null>(null);
-  useEffect(() => { currentIdRef.current = currentId; }, [currentId]);
+  useEffect(() => {
+    currentIdRef.current = currentId;
+  }, [currentId]);
 
   const play = useCallback(
     (id: string, q?: Song[]) => {
@@ -129,6 +146,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       const song = songs.find((s) => s.id === id);
       if (!song || !song.youtubeId) return;
       setUnavailableId(null);
+      fallbackAttemptedRef.current.delete(id);
       yt.loadVideoById(song.youtubeId);
       setCurrentId(id);
     },
@@ -159,7 +177,9 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     if (p) play(p.id);
   }, [current, queue, play]);
 
-  useEffect(() => { nextRef.current = next; }, [next]);
+  useEffect(() => {
+    nextRef.current = next;
+  }, [next]);
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -174,8 +194,34 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo<Ctx>(
-    () => ({ current, isPlaying, progress, elapsed, queue, play, toggle, next, prev, showVideo, setShowVideo, unavailableId: unavailableId === "current" ? currentId : null }),
-    [current, isPlaying, progress, elapsed, queue, play, toggle, next, prev, showVideo, unavailableId, currentId],
+    () => ({
+      current,
+      isPlaying,
+      progress,
+      elapsed,
+      queue,
+      play,
+      toggle,
+      next,
+      prev,
+      showVideo,
+      setShowVideo,
+      unavailableId: unavailableId === "current" ? currentId : null,
+    }),
+    [
+      current,
+      isPlaying,
+      progress,
+      elapsed,
+      queue,
+      play,
+      toggle,
+      next,
+      prev,
+      showVideo,
+      unavailableId,
+      currentId,
+    ],
   );
 
   return (
