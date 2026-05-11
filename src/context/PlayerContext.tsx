@@ -168,7 +168,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   );
 
   const toggle = useCallback(() => {
-    if (!yt || !currentId) return;
+    if (!currentId) return;
     if (usingAudioFallback) {
       const audio = audioRef.current;
       if (audio?.paused) void audio.play();
@@ -227,6 +227,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       showVideo,
       setShowVideo,
       unavailableId: unavailableId === "current" ? currentId : null,
+      usingAudioFallback,
     }),
     [
       current,
@@ -241,12 +242,24 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       showVideo,
       unavailableId,
       currentId,
+      usingAudioFallback,
     ],
   );
 
   return (
     <PlayerCtx.Provider value={value}>
       {children}
+      <audio
+        ref={audioRef}
+        preload="none"
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onEnded={() => {
+          setIsPlaying(false);
+          nextRef.current?.();
+        }}
+        onError={() => setUnavailableId(currentIdRef.current ?? "current")}
+      />
       {/* Hidden YouTube player host. Rendered visually via portal-like positioning when showVideo=true */}
       <div
         className={`fixed z-40 overflow-hidden rounded-2xl shadow-2xl transition-all ${
