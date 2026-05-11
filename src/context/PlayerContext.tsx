@@ -22,6 +22,7 @@ type Ctx = {
   showVideo: boolean;
   setShowVideo: (v: boolean) => void;
   unavailableId: string | null;
+  usingAudioFallback: boolean;
 };
 
 const PlayerCtx = createContext<Ctx | null>(null);
@@ -53,6 +54,7 @@ function loadYTApi(): Promise<any> {
 
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const playerRef = useRef<any>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const containerId = "yt-player-host";
   const [currentId, setCurrentId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -62,7 +64,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [showVideo, setShowVideo] = useState(false);
   const [ready, setReady] = useState(false);
   const [unavailableId, setUnavailableId] = useState<string | null>(null);
-  const fallbackAttemptedRef = useRef<Set<string>>(new Set());
+  const [usingAudioFallback, setUsingAudioFallback] = useState(false);
 
   const current = useMemo(() => songs.find((s) => s.id === currentId) ?? null, [currentId]);
 
@@ -85,7 +87,12 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
           onReady: () => setReady(true),
           onStateChange: (e: any) => {
             const s = e.data;
-            if (s === YT.PlayerState.PLAYING) setIsPlaying(true);
+            if (s === YT.PlayerState.PLAYING) {
+              audioRef.current?.pause();
+              setUsingAudioFallback(false);
+              setUnavailableId(null);
+              setIsPlaying(true);
+            }
             else if (s === YT.PlayerState.PAUSED) setIsPlaying(false);
             else if (s === YT.PlayerState.ENDED) {
               setIsPlaying(false);
@@ -95,28 +102,19 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
           onError: (e: any) => {
             // 2 invalid id, 5 html5 player error, 100 not found, 101/150 embed disabled
             console.warn("[YT] playback error", e?.data);
-            // Auto-fallback: search YouTube for an official upload of the current song
-            const yt = playerRef.current;
             const songId = currentIdRef.current;
             const song = songs.find((s) => s.id === songId);
-            if (
-              yt &&
-              songId &&
-              song &&
-              yt.loadPlaylist &&
-              !fallbackAttemptedRef.current.has(songId)
-            ) {
-              try {
-                fallbackAttemptedRef.current.add(songId);
-                yt.loadPlaylist({
-                  list: `${song.title} ${song.movie} official`,
-                  listType: "search",
-                  index: 0,
-                });
-                return;
-              } catch (err) {
-                console.warn("[YT] search fallback failed", err);
-              }
+            const audio = audioRef.current;
+            if (audio && song) {
+              setUsingAudioFallback(true);
+              setUnavailableId(null);
+              audio.src = song.previewUrl;
+              audio.currentTime = 0;
+              void audio.play().catch(() => {
+                setIsPlaying(false);
+                setUnavailableId(songId ?? "current");
+              });
+              return;
             }
             setIsPlaying(false);
             setUnavailableId(songId ?? "current");
@@ -135,41 +133,54 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const play = useCallback(
     (id: string, q?: Song[]) => {
       const yt = playerRef.current;
-      if (!yt || !ready) return;
       if (q && q.length) setQueue(q);
-      if (id === currentId) {
-        const state = yt.getPlayerState?.();
-        if (state === 1) yt.pauseVideo();
-        else yt.playVideo();
-        return;
-      }
       const song = songs.find((s) => s.id === id);
       if (!song) return;
-      setUnavailableId(null);
-      fallbackAttemptedRef.current.delete(id);
-      // Always load via search to avoid embed-disabled official uploads.
-      // The IFrame player picks the first embeddable result for the query.
-      try {
-        yt.loadPlaylist({
-          list: `${song.title} ${song.movie} lyrics`,
-          listType: "search",
-          index: 0,
-        });
-      } catch {
-        if (song.youtubeId) yt.loadVideoById(song.youtubeId);
+      if (id === currentId) {
+        if (usingAudioFallback) {
+          const audio = audioRef.current;
+          if (audio?.paused) void audio.play();
+          else audio?.pause();
+        } else {
+          const state = yt?.getPlayerState?.();
+          if (state === 1) yt.pauseVideo();
+          else yt?.playVideo();
+        }
+        return;
       }
+      setUnavailableId(null);
+      setUsingAudioFallback(false);
+      audioRef.current?.pause();
       setCurrentId(id);
+      currentIdRef.current = id;
+      if (!yt || !ready || !song.youtubeId) {
+        const audio = audioRef.current;
+        if (audio) {
+          setUsingAudioFallback(true);
+          audio.src = song.previewUrl;
+          audio.currentTime = 0;
+          void audio.play().catch(() => setUnavailableId(id));
+        }
+      } else {
+        yt.loadVideoById(song.youtubeId);
+      }
     },
-    [currentId, ready],
+    [currentId, ready, usingAudioFallback],
   );
 
   const toggle = useCallback(() => {
+    if (!currentId) return;
+    if (usingAudioFallback) {
+      const audio = audioRef.current;
+      if (audio?.paused) void audio.play();
+      else audio?.pause();
+      return;
+    }
     const yt = playerRef.current;
-    if (!yt || !currentId) return;
-    const state = yt.getPlayerState?.();
+    const state = yt?.getPlayerState?.();
     if (state === 1) yt.pauseVideo();
-    else yt.playVideo();
-  }, [currentId]);
+    else yt?.playVideo();
+  }, [currentId, usingAudioFallback]);
 
   const next = useCallback(() => {
     if (!current) return;
@@ -193,6 +204,15 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const t = setInterval(() => {
+      if (usingAudioFallback) {
+        const audio = audioRef.current;
+        if (!audio) return;
+        const cur = audio.currentTime || 0;
+        const dur = audio.duration || 0;
+        setElapsed(cur);
+        if (dur > 0) setProgress(cur / dur);
+        return;
+      }
       const yt = playerRef.current;
       if (!yt || !yt.getCurrentTime) return;
       const cur = yt.getCurrentTime() || 0;
@@ -201,7 +221,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       if (dur > 0) setProgress(cur / dur);
     }, 250);
     return () => clearInterval(t);
-  }, []);
+  }, [usingAudioFallback]);
 
   const value = useMemo<Ctx>(
     () => ({
@@ -217,6 +237,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       showVideo,
       setShowVideo,
       unavailableId: unavailableId === "current" ? currentId : null,
+      usingAudioFallback,
     }),
     [
       current,
@@ -231,12 +252,24 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       showVideo,
       unavailableId,
       currentId,
+      usingAudioFallback,
     ],
   );
 
   return (
     <PlayerCtx.Provider value={value}>
       {children}
+      <audio
+        ref={audioRef}
+        preload="none"
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onEnded={() => {
+          setIsPlaying(false);
+          nextRef.current?.();
+        }}
+        onError={() => setUnavailableId(currentIdRef.current ?? "current")}
+      />
       {/* Hidden YouTube player host. Rendered visually via portal-like positioning when showVideo=true */}
       <div
         className={`fixed z-40 overflow-hidden rounded-2xl shadow-2xl transition-all ${
