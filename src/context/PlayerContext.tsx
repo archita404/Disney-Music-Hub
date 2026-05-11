@@ -144,10 +144,20 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       const song = songs.find((s) => s.id === id);
-      if (!song || !song.youtubeId) return;
+      if (!song) return;
       setUnavailableId(null);
       fallbackAttemptedRef.current.delete(id);
-      yt.loadVideoById(song.youtubeId);
+      // Always load via search to avoid embed-disabled official uploads.
+      // The IFrame player picks the first embeddable result for the query.
+      try {
+        yt.loadPlaylist({
+          list: `${song.title} ${song.movie} lyrics`,
+          listType: "search",
+          index: 0,
+        });
+      } catch {
+        if (song.youtubeId) yt.loadVideoById(song.youtubeId);
+      }
       setCurrentId(id);
     },
     [currentId, ready],
