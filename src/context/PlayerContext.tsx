@@ -151,6 +151,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       setUnavailableId(null);
       setUsingAudioFallback(false);
       audioRef.current?.pause();
+      setCurrentId(id);
+      currentIdRef.current = id;
       if (!yt || !ready || !song.youtubeId) {
         const audio = audioRef.current;
         if (audio) {
@@ -162,7 +164,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       } else {
         yt.loadVideoById(song.youtubeId);
       }
-      setCurrentId(id);
     },
     [currentId, ready, usingAudioFallback],
   );
@@ -203,6 +204,15 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const t = setInterval(() => {
+      if (usingAudioFallback) {
+        const audio = audioRef.current;
+        if (!audio) return;
+        const cur = audio.currentTime || 0;
+        const dur = audio.duration || 0;
+        setElapsed(cur);
+        if (dur > 0) setProgress(cur / dur);
+        return;
+      }
       const yt = playerRef.current;
       if (!yt || !yt.getCurrentTime) return;
       const cur = yt.getCurrentTime() || 0;
@@ -211,7 +221,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       if (dur > 0) setProgress(cur / dur);
     }, 250);
     return () => clearInterval(t);
-  }, []);
+  }, [usingAudioFallback]);
 
   const value = useMemo<Ctx>(
     () => ({
