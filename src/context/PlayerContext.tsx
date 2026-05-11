@@ -133,41 +133,53 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const play = useCallback(
     (id: string, q?: Song[]) => {
       const yt = playerRef.current;
-      if (!yt || !ready) return;
       if (q && q.length) setQueue(q);
-      if (id === currentId) {
-        const state = yt.getPlayerState?.();
-        if (state === 1) yt.pauseVideo();
-        else yt.playVideo();
-        return;
-      }
       const song = songs.find((s) => s.id === id);
       if (!song) return;
+      if (id === currentId) {
+        if (usingAudioFallback) {
+          const audio = audioRef.current;
+          if (audio?.paused) void audio.play();
+          else audio?.pause();
+        } else {
+          const state = yt?.getPlayerState?.();
+          if (state === 1) yt.pauseVideo();
+          else yt?.playVideo();
+        }
+        return;
+      }
       setUnavailableId(null);
-      fallbackAttemptedRef.current.delete(id);
-      // Always load via search to avoid embed-disabled official uploads.
-      // The IFrame player picks the first embeddable result for the query.
-      try {
-        yt.loadPlaylist({
-          list: `${song.title} ${song.movie} lyrics`,
-          listType: "search",
-          index: 0,
-        });
-      } catch {
-        if (song.youtubeId) yt.loadVideoById(song.youtubeId);
+      setUsingAudioFallback(false);
+      audioRef.current?.pause();
+      if (!yt || !ready || !song.youtubeId) {
+        const audio = audioRef.current;
+        if (audio) {
+          setUsingAudioFallback(true);
+          audio.src = song.previewUrl;
+          audio.currentTime = 0;
+          void audio.play().catch(() => setUnavailableId(id));
+        }
+      } else {
+        yt.loadVideoById(song.youtubeId);
       }
       setCurrentId(id);
     },
-    [currentId, ready],
+    [currentId, ready, usingAudioFallback],
   );
 
   const toggle = useCallback(() => {
-    const yt = playerRef.current;
     if (!yt || !currentId) return;
-    const state = yt.getPlayerState?.();
+    if (usingAudioFallback) {
+      const audio = audioRef.current;
+      if (audio?.paused) void audio.play();
+      else audio?.pause();
+      return;
+    }
+    const yt = playerRef.current;
+    const state = yt?.getPlayerState?.();
     if (state === 1) yt.pauseVideo();
-    else yt.playVideo();
-  }, [currentId]);
+    else yt?.playVideo();
+  }, [currentId, usingAudioFallback]);
 
   const next = useCallback(() => {
     if (!current) return;
