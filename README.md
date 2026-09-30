@@ -2,7 +2,7 @@
 
 > An enchanted library of magical Disney movie songs — play, sing along with synced lyrics, and journey through every kingdom. 💖
 
----
+
 
 ## 🎬 About
 
